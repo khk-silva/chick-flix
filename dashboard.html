@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breed Classification</title>
+    <!-- Include CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-container">
+    <div id = "topic"> <h1>Breed Classification</h1> </div>
+        <div class="dashboard-row">
+            <!-- Left side (instructions) -->
+            <div class="dashboard-col-md-6">
+                <h3>Instructions</h3>
+                <ul class="dashboard-ul">
+                    <li>Click the button below to upload an image.</li>
+                    <li>Once uploaded, the image will replace the default image.</li>
+                    <li>Click "Analyze" to determine the breed of the chicken.</li>
+                </ul>
+                <div class="button-container">
+                    <a href="index.html" class="home-button">Home</a>
+                </div>
+                <div id="resultArea">
+                    <p id="breedResult" style="display: none;">Breed: <span id="breedName"></span></p>
+                    <button class="dashboard-btn dashboard-btn-secondary" id="clearBtn" style="display: none;">Clear</button>
+                    <button class="dashboard-btn dashboard-btn-info" id="detailsBtn" style="display: none;">View Additional Details</button>
+                </div>
+            </div>
+            <!-- Right side (image upload and preview) -->
+            <div class="dashboard-col-md-6">
+                <div class="dashboard-image-preview" id="imagePreview">
+                    <img id="uploadedImage" src="assets/images/breed-classifications-model/img10.jpg" alt="Default Image">
+                </div>
+                <div class="dashboard-upload-container">
+                    <input type="file" id="imageUpload" name="imageUpload" accept="image/*" style="display: none;">
+                    <button type="button" class="dashboard-btn dashboard-btn-primary" id="uploadBtn">Upload Image</button>
+                    <button type="button" class="dashboard-btn dashboard-btn-primary" id="analyzeBtn" style="display: none;">Analyze</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for More Details -->
+    <div id="detailsModal" class="dashboard-modal">
+        <div class="dashboard-modal-content">
+            <div class="dashboard-modal-header">
+                <h2>Breed Details</h2>
+                <span class="dashboard-close" id="closeModal">&times;</span>
+            </div>
+            <div class="dashboard-modal-body">
+                <ul>
+                    <li>Origin: Sri Lanka</li>
+                    <li>Size: Medium</li>
+                    <li>Egg Color: White</li>
+                    <li>Temperament: Friendly</li>
+                    <!-- Add more breed-specific details -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include JavaScript -->
+    <script src="assets/js/script.js"></script>
+    
+</body>
+</html>

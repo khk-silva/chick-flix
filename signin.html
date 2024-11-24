@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <!-- Include CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        // Function to handle form submission
+        function handleLogin(event) {
+            event.preventDefault(); // Prevent form from submitting to the server
+
+            // Get username and password values
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Example validation (this should be replaced with server-side validation in real apps)
+            if (username === "admin" && password === "password") {
+                // If login is successful, redirect to another page
+                window.location.href = "dashboard.html";  // Redirect to the dashboard page
+            } else {
+                alert("Invalid credentials, please try again.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="signin">
+        <div class="signin-page-container">
+            <!-- Left Side: Sign In Form -->
+            <div class="signin-container">
+                <h2>Sign In</h2>
+                <form onsubmit="handleLogin(event)">
+                    <!-- Username Input -->
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    
+                    <!-- Password Input -->
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="signin-btn">Sign In</button>
+                </form>
+                <!-- Sign Up Link -->
+                <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+            </div>
+
+            <!-- Right Side: Image Container -->
+            <div class="signin-image-container">
+                <img src="assets/images/breed-classifications-model/img6.png" alt="Sign In Image" class="signin-image">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

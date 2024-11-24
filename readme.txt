@@ -1,20 +1,20 @@
 -----------------------
 # README
 -----------------------
-ChickFlix is a one page bootstrap 3 based Car Dealer Automotive website template.
+
 
 
 Template Info:
 -----------------------
-Name: 		ChickFlix - Free Bootstrap One Page Car Dealer Automotive website template
+Name: 		ChickFlix 
 Version: 	1.0
-Author: 	ThemeSINE
-Website: 	https://www.themesine.com/
+Author: 	HIRUNI 
+Website: 	
 
 
 Changelog:
 -----------------------
-Version 1.0 13-06-2018
+
 - initial release 
 
 

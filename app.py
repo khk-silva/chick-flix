@@ -1,76 +1,90 @@
-from flask import Flask, request, jsonify
-from keras.preprocessing import image
+import os
+import joblib
 import numpy as np
 from PIL import Image
-import io
-from tensorflow.keras.models import load_model
-from sklearn.svm import SVC  
-import joblib 
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import requests
 
-# Load the feature extraction model and the SVM model
-feature_model = load_model('models/4_feature_model.h5')
-svm_model = joblib.load('models/4_svm_model.pkl')
+# --- Function to download files from a given URL if they don't already exist ---
+def download_file(url, output_path):
+    if not os.path.exists(output_path):
+        print(f"Downloading {output_path}...")
+        r = requests.get(url)
+        with open(output_path, 'wb') as f:
+            f.write(r.content)
+        print(f"Downloaded: {output_path}")
 
-IMAGE_SIZE = (224, 224) 
+# --- URLs to  models (replace with actual Google Drive file IDs) ---
+FEATURE_MODEL_URL = "https://drive.google.com/file/d/14U4_RIK_tt6jz4gwxfjPMVZW_mNLzfa7/view?usp=drive_link"
+SVM_MODEL_URL = "https://drive.google.com/file/d/1Q1JafbPb_rQs0oPVljaLUwE1R9YA9o-p/view?usp=drive_link"
 
+# --- Ensure 'models' folder exists ---
+os.makedirs("models", exist_ok=True)
+
+# --- Paths where models will be saved ---
+feature_model_path = "models/4_feature_model.h5"
+svm_model_path = "models/4_svm_model.pkl"
+
+# --- Download models if missing ---
+download_file(FEATURE_MODEL_URL, feature_model_path)
+download_file(SVM_MODEL_URL, svm_model_path)
+
+# --- Load the models ---
+feature_model = load_model(feature_model_path)
+svm_model = joblib.load(svm_model_path)
+
+# --- Flask app setup ---
 app = Flask(__name__)
 CORS(app)
 
+IMAGE_SIZE = (224, 224)
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Ensure a file is uploaded
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
 
     file = request.files['file']
-
-    
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
     try:
-       
-        img = Image.open(file.stream)  
-        img = img.resize(IMAGE_SIZE)  
-
-       
+        # Preprocess the image
+        img = Image.open(file.stream)
+        img = img.resize(IMAGE_SIZE)
         img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0) / 255.0  # Normalize the image
+        img_array = np.expand_dims(img_array, axis=0) / 255.0
 
-       
+        # Extract features and classify with SVM
         features = feature_model.predict(img_array)
-        features = features.reshape(1, -1)  # Flatten the features for SVM input
+        features = features.reshape(1, -1)
 
-       
         prediction_probs = svm_model.predict_proba(features)
         max_prob = np.max(prediction_probs)
         prediction = svm_model.predict(features)
 
-         #  Reject low-confidence predictions
-        if max_prob < 0.9: 
+        if max_prob < 0.9:
             return jsonify({'error': 'Uncertain prediction, please upload a clear chicken image'}), 400
 
-
-        breed_names = ["Australorp", "Black star", "Blue Plymouth Rock", "Brahma"
-                       , "Leghorn", "Lohman", "PlymouthRock",
-                       "Wyandotte"]  # List of breed names
+        breed_names = [
+            "Australorp", "Black star", "Blue Plymouth Rock", "Brahma",
+            "Leghorn", "Lohman", "PlymouthRock", "Wyandotte"
+        ]
         predicted_breed = breed_names[prediction[0]]
 
-        # Check if the predicted breed is in the list of recognized breeds
         if predicted_breed not in breed_names:
             return jsonify({'error': 'Unrecognized breed detected'}), 400
 
-        # Returning the breed and the prediction probability
         return jsonify({
             'breed': predicted_breed,
-            'confidence': max_prob
+            'confidence': float(max_prob)
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500   
-    
-    
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

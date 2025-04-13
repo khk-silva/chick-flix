@@ -6,40 +6,36 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-import requests
+import gdown  
 
-# --- Function to download files from a given URL if they don't already exist ---
-def download_file(url, output_path):
-    if not os.path.exists(output_path):
-        print(f"Downloading {output_path}...")
-        r = requests.get(url)
-        with open(output_path, 'wb') as f:
-            f.write(r.content)
-        print(f"Downloaded: {output_path}")
+# --- Google Drive file IDs  ---
+FEATURE_MODEL_ID = "14U4_RIK_tt6jz4gwxfjPMVZW_mNLzfa7"
+SVM_MODEL_ID = "1Q1JafbPb_rQs0oPVljaLUwE1R9YA9o-p"
 
-# --- URLs to  models (replace with actual Google Drive file IDs) ---
-FEATURE_MODEL_URL = "https://drive.google.com/file/d/14U4_RIK_tt6jz4gwxfjPMVZW_mNLzfa7/view?usp=drive_link"
-SVM_MODEL_URL = "https://drive.google.com/file/d/1Q1JafbPb_rQs0oPVljaLUwE1R9YA9o-p/view?usp=drive_link"
-
-# --- Ensure 'models' folder exists ---
-os.makedirs("models", exist_ok=True)
-
-# --- Paths where models will be saved ---
+# --- Output paths ---
 feature_model_path = "models/4_feature_model.h5"
 svm_model_path = "models/4_svm_model.pkl"
 
-# --- Download models if missing ---
-download_file(FEATURE_MODEL_URL, feature_model_path)
-download_file(SVM_MODEL_URL, svm_model_path)
+# --- Ensure models directory exists ---
+os.makedirs("models", exist_ok=True)
 
-# --- Load the models ---
+# --- Function to download using gdown ---
+def download_file_from_drive(file_id, output_path):
+    if not os.path.exists(output_path):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output_path, quiet=False)
+
+# --- Download if missing ---
+download_file_from_drive(FEATURE_MODEL_ID, feature_model_path)
+download_file_from_drive(SVM_MODEL_ID, svm_model_path)
+
+# --- Load models ---
 feature_model = load_model(feature_model_path)
 svm_model = joblib.load(svm_model_path)
 
 # --- Flask app setup ---
 app = Flask(__name__)
 CORS(app)
-
 IMAGE_SIZE = (224, 224)
 
 @app.route('/predict', methods=['POST'])
@@ -52,13 +48,11 @@ def predict():
         return jsonify({'error': 'No selected file'}), 400
 
     try:
-        # Preprocess the image
         img = Image.open(file.stream)
         img = img.resize(IMAGE_SIZE)
         img_array = image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0) / 255.0
 
-        # Extract features and classify with SVM
         features = feature_model.predict(img_array)
         features = features.reshape(1, -1)
 
@@ -74,9 +68,6 @@ def predict():
             "Leghorn", "Lohman", "PlymouthRock", "Wyandotte"
         ]
         predicted_breed = breed_names[prediction[0]]
-
-        if predicted_breed not in breed_names:
-            return jsonify({'error': 'Unrecognized breed detected'}), 400
 
         return jsonify({
             'breed': predicted_breed,
